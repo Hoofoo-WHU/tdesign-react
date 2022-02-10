@@ -1,4 +1,4 @@
-import React, { useState, Ref } from 'react';
+import React, { useState, Ref, useRef } from 'react';
 import dayjs from 'dayjs';
 import classNames from 'classnames';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
@@ -50,6 +50,7 @@ const TimePicker = forwardRefWithStatics(
     } = useDefaultValue(props);
 
     const [isPanelShowed, setPanelShow] = useState(false);
+    const popupRef = useRef(null);
 
     const { classPrefix } = useConfig();
     const name = `${classPrefix}-time-picker`;
@@ -92,6 +93,7 @@ const TimePicker = forwardRefWithStatics(
         overlayClassName={classNames(`${name}__panel-container`)}
         placement="bottom-left"
         trigger="click"
+        ref={popupRef}
         expandAnimation={true}
       >
         {/* TODO active与date picker保持一致 */}

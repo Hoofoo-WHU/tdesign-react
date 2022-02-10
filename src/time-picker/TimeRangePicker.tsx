@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useState, useRef } from 'react';
 import classNames from 'classnames';
 
 import { TimeIcon } from 'tdesign-icons-react';
@@ -39,6 +39,7 @@ const TimeRangePicker: FC<TimeRangePickerProps> = (props) => {
   } = useDefaultValue(props);
 
   const { classPrefix } = useConfig();
+  const popupRef = useRef(null);
 
   const name = `${classPrefix}-time-picker`;
 
@@ -79,6 +80,7 @@ const TimeRangePicker: FC<TimeRangePickerProps> = (props) => {
       onVisibleChange={handleShowPopup}
       trigger="click"
       expandAnimation={true}
+      ref={popupRef}
     >
       <div className={classNames(name, className)} style={style}>
         <Input

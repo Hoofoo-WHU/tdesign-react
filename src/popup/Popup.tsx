@@ -19,7 +19,7 @@ import composeRefs from '../_util/composeRefs';
 import { TdPopupProps } from './type';
 import Portal from '../common/Portal';
 import useTriggerProps from './hooks/useTriggerProps';
-import usePopupCssTransition from './hooks/usePopupCssTransition';
+import calcTransitionState from './utils/calcTransitionState';
 
 export interface PopupProps extends TdPopupProps, StyledProps {
   // 是否触发展开收起动画，内部下拉式组件使用
@@ -155,14 +155,39 @@ const Popup = forwardRef<HTMLDivElement, PopupProps>((props, ref) => {
     ...triggerProps,
   });
 
-  const cssTransitionState = usePopupCssTransition({ contentRef, classPrefix, expandAnimation });
-
+  const handleExited = () => {
+    // eslint-disable-next-line no-param-reassign
+    ref.current.style = null;
+    // eslint-disable-next-line no-param-reassign
+    ref.current.style.display = 'none';
+  };
+  const handleEnter = () => {
+    // eslint-disable-next-line no-param-reassign
+    ref.current.style.display = 'block';
+  };
   // 初次不渲染.
   const portal =
     visible || overlayRef ? (
-      <CSSTransition in={visible} nodeRef={portalRef} timeout={400} appear unmountOnExit={destroyOnClose}>
+      <CSSTransition
+        in={visible}
+        nodeRef={portalRef}
+        timeout={200}
+        appear
+        unmountOnExit={destroyOnClose}
+        onEnter={!destroyOnClose && handleEnter}
+        onExited={!destroyOnClose && handleExited}
+      >
         <Portal attach={attach} ref={portalRef}>
-          <CSSTransition in={visible} appear {...cssTransitionState.props}>
+          <CSSTransition
+            appear
+            in={visible}
+            nodeRef={portalRef}
+            {...calcTransitionState({
+              contentRef: ref,
+              classPrefix,
+              expandAnimation,
+            })}
+          >
             <div
               ref={composeRefs(setOverlayRef, ref)}
               style={{ ...styles.popper, zIndex }}
@@ -171,9 +196,13 @@ const Popup = forwardRef<HTMLDivElement, PopupProps>((props, ref) => {
               {...popupProps}
             >
               <div
-                className={classNames(`${classPrefix}-popup__content`, overlayClassName, {
-                  [`${classPrefix}-popup__content--arrow`]: showArrow,
-                })}
+                className={classNames(
+                  `${classPrefix}-popup__content`,
+                  {
+                    [`${classPrefix}-popup__content--arrow`]: showArrow,
+                  },
+                  overlayClassName,
+                )}
                 style={overlayVisibleStyle}
                 ref={contentRef}
                 onScroll={(e) => onScroll?.({ e: e as React.WheelEvent<HTMLDivElement> })}
